@@ -172,7 +172,7 @@ jobs:
         with:
           tag_name: 'v${{ github.ref }}'
           draft: false
-          prerelease: true
+          prerelease: false
           files: |
             release/bundle/nsis/*.exe
             release/bundle/msi/*.msi
