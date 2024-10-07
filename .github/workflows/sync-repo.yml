@@ -13,7 +13,7 @@ jobs:
     - name: Checkout forked repository
       uses: actions/checkout@v3
       with:
-        repository: tu-usuario/code # Reemplaza 'tu-usuario' con tu nombre de usuario de GitHub
+        repository: D3fau4/Modrinth-desktop # Reemplaza 'tu-usuario' con tu nombre de usuario de GitHub
         ref: main # El branch en tu fork
 
     - name: Add upstream repository
