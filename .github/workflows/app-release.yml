@@ -153,3 +153,26 @@ jobs:
             target/release/bundle/nsis/*.exe
             target/release/bundle/nsis/*.nsis.zip
             target/release/bundle/nsis/*.nsis.zip.sig
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest, ubuntu-22.04]
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.platform }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release/bundle/nsis/*.exe
+            release/bundle/msi/*.msi
+            release/bundle/*/*.deb
+            release/bundle/*/*.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
