@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout forked repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: D3fau4/Modrinth-desktop # Reemplaza 'tu-usuario' con tu nombre de usuario de GitHub
         ref: main # El branch en tu fork
