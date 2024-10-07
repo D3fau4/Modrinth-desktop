@@ -170,6 +170,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.sha }}
+          draft: false
+          prerelease: true
           files: |
             release/bundle/nsis/*.exe
             release/bundle/msi/*.msi
