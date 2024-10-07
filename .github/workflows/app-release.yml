@@ -170,7 +170,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.sha }}
+          tag_name: 'v${{ github.ref }}'
           draft: false
           prerelease: true
           files: |
@@ -184,5 +184,3 @@ jobs:
             release/bundle/*/*.AppImage
             release/bundle/*/*.AppImage.tar.gz
             release/bundle/*/*.AppImage.tar.gz.sig
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
