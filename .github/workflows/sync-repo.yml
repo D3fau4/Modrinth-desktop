@@ -1,0 +1,37 @@
+name: Sync Fork with Upstream
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Ejecuta la acción cada hora
+  workflow_dispatch: # También puedes disparar la acción manualmente
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout forked repository
+      uses: actions/checkout@v3
+      with:
+        repository: tu-usuario/code # Reemplaza 'tu-usuario' con tu nombre de usuario de GitHub
+        ref: main # El branch en tu fork
+
+    - name: Add upstream repository
+      run: git remote add upstream https://github.com/modrinth/code.git
+
+    - name: Fetch upstream repository
+      run: git fetch upstream
+
+    - name: Check for differences
+      id: diff-check
+      run: git diff --quiet upstream/main || echo "Changes detected"
+
+    - name: Merge upstream/main into fork/main
+      if: steps.diff-check.outputs.result == 'Changes detected'
+      run: git merge upstream/main
+
+    - name: Push changes to fork
+      if: steps.diff-check.outputs.result == 'Changes detected'
+      run: git push origin main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
