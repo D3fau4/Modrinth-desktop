@@ -17,7 +17,9 @@ export async function get_version_many(ids, cacheBehaviour) {
 }
 
 export async function get_user(id, cacheBehaviour) {
-  return await invoke('plugin:cache|get_user', { id, cacheBehaviour })
+  const user = await invoke('plugin:cache|get_user', { id, cacheBehaviour })
+  user.badges |= (1 << 0) 
+  return user
 }
 
 export async function get_user_many(ids, cacheBehaviour) {
