@@ -2,7 +2,7 @@ name: Sync Fork with Upstream
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Ejecuta la acción cada hora
+    - cron: '0 0 * * *'  # Ejecuta la acción a la medianoche cada día
   workflow_dispatch: # También puedes disparar la acción manualmente
 
 jobs:
@@ -13,8 +13,8 @@ jobs:
     - name: Checkout forked repository
       uses: actions/checkout@v4
       with:
-        repository: D3fau4/Modrinth-desktop # Reemplaza 'tu-usuario' con tu nombre de usuario de GitHub
-        ref: main # El branch en tu fork
+        repository: D3fau4/Modrinth-desktop
+        ref: main
 
     - name: Add upstream repository
       run: git remote add upstream https://github.com/modrinth/code.git
@@ -24,14 +24,16 @@ jobs:
 
     - name: Check for differences
       id: diff-check
-      run: git diff --quiet upstream/main || echo "Changes detected"
+      run: |
+        git fetch upstream
+        git diff --quiet upstream/main || echo "has_changes=true" >> $GITHUB_ENV
 
     - name: Merge upstream/main into fork/main
-      if: steps.diff-check.outputs.result == 'Changes detected'
+      if: env.has_changes == 'true'
       run: git merge upstream/main
 
     - name: Push changes to fork
-      if: steps.diff-check.outputs.result == 'Changes detected'
+      if: env.has_changes == 'true'
       run: git push origin main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
