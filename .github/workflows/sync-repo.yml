@@ -2,44 +2,42 @@ name: Sync Fork with Upstream
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Ejecuta la acción a la medianoche cada día
-  workflow_dispatch: # También puedes disparar la acción manualmente
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Permite ejecutar manualmente la acción
+
+env:
+  SOURCE_REPO: 'https://github.com/modrinth/code.git'
+  TARGET_BRANCH: 'main'
+  WORKING_BRANCH: 'modrinth-merge'
 
 jobs:
-  sync:
+  merge:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout forked repository
+    - name: Configurar Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Checkout de tu repositorio
       uses: actions/checkout@v4
       with:
-        repository: D3fau4/Modrinth-desktop
-        ref: main
+        fetch-depth: 0
 
-    - name: Add upstream repository
-      run: git remote add upstream https://github.com/modrinth/code.git
-
-    - name: Fetch upstream repository
-      run: git fetch upstream
-
-    - name: Check for differences
-      id: diff-check
+    - name: Añadir el repo de origen
       run: |
-        git fetch upstream
-        git diff --quiet upstream/main || echo "has_changes=true" >> $GITHUB_ENV
+        git remote add source-repo ${{ env.SOURCE_REPO }}
+        git fetch source-repo
 
-    - name: Set git user
-      if: env.has_changes == 'true'
+    - name: Crear o mover a la rama de trabajo
       run: |
-        git config --local user.email "actions@github.com"
-        git config --local user.name "GitHub Action"
+        git checkout -B ${{ env.WORKING_BRANCH }}
 
-    - name: Merge upstream/main into fork/main
-      if: env.has_changes == 'true'
-      run: git merge upstream/main --allow-unrelated-histories
+    - name: Hacer merge de los cambios del repo de origen
+      run: |
+        git merge source-repo/${{ env.TARGET_BRANCH }} --allow-unrelated-histories || echo "No hay cambios para mergear"
 
-    - name: Push changes to fork
-      if: env.has_changes == 'true'
-      run: git push origin main
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Subir los cambios al repositorio
+      run: |
+        git push origin ${{ env.WORKING_BRANCH }}
