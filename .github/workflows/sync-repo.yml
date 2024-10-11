@@ -17,10 +17,11 @@ jobs:
         ref: main
 
     - name: Set git user
-        if: env.has_changes == 'true'
-        run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Action"
+      if: env.has_changes == 'true'
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Action"
+
 
     - name: Add upstream repository
       run: git remote add upstream https://github.com/modrinth/code.git
