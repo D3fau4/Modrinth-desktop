@@ -30,7 +30,7 @@ jobs:
 
     - name: Merge upstream/main into fork/main
       if: env.has_changes == 'true'
-      run: git merge upstream/main
+      run: git merge upstream/main --allow-unrelated-histories
 
     - name: Push changes to fork
       if: env.has_changes == 'true'
