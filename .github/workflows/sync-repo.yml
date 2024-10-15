@@ -32,7 +32,8 @@ jobs:
 
     - name: Crear o mover a la rama de trabajo
       run: |
-        git checkout -B ${{ env.WORKING_BRANCH }}
+        git fetch origin
+        git checkout -B ${{ env.WORKING_BRANCH }} origin/${{ env.WORKING_BRANCH }}
 
     - name: Hacer merge de los cambios del repo de origen
       run: |
