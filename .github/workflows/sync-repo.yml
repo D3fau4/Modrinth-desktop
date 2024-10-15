@@ -8,7 +8,7 @@ on:
 env:
   SOURCE_REPO: 'https://github.com/modrinth/code.git'
   TARGET_BRANCH: 'main'
-  WORKING_BRANCH: 'modrinth-merge'
+  WORKING_BRANCH: 'main'
 
 jobs:
   merge:
