@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, windows-latest, ubuntu-22.04]
+        platform: [windows-latest, ubuntu-22.04]
 
     runs-on: ${{ matrix.platform }}
 
@@ -153,3 +153,34 @@ jobs:
             target/release/bundle/nsis/*.exe
             target/release/bundle/nsis/*.nsis.zip
             target/release/bundle/nsis/*.nsis.zip.sig
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release assets (Windows)
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-latest
+
+      - name: Download release assets (Ubuntu)
+        uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-22.04
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: 'v${{ github.ref }}'
+          draft: false
+          prerelease: false
+          files: |
+            release/bundle/nsis/*.exe
+            release/bundle/msi/*.msi
+            release/bundle/*/*.deb
+            release/bundle/*/*.rpm
+            release/bundle/*/*.dmg
+            release/bundle/*/*.app.tar.gz
+            release/bundle/*/*.app.tar.gz.sig
+            release/bundle/*/*.AppImage
+            release/bundle/*/*.AppImage.tar.gz
+            release/bundle/*/*.AppImage.tar.gz.sig
