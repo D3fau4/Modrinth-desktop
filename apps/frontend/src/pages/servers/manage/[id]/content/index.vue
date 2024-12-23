@@ -73,7 +73,7 @@
                 type="search"
                 name="search"
                 autocomplete="off"
-                :placeholder="`Search ${type}s...`"
+                :placeholder="`Search ${type.toLocaleLowerCase()}s...`"
                 @input="debouncedSearch"
               />
             </div>
@@ -93,7 +93,7 @@
                 </span>
                 <FilterIcon aria-hidden="true" />
                 <DropdownIcon aria-hidden="true" class="h-5 w-5 text-secondary" />
-                <template #all> All {{ type }}s </template>
+                <template #all> All {{ type.toLocaleLowerCase() }}s </template>
                 <template #enabled> Only enabled </template>
                 <template #disabled> Only disabled </template>
               </UiServersTeleportOverflowMenu>
@@ -102,10 +102,10 @@
           <ButtonStyled v-if="hasMods" color="brand" type="outlined">
             <nuxt-link
               class="w-full text-nowrap sm:w-fit"
-              :to="`/${type}s?sid=${props.server.serverId}`"
+              :to="`/${type.toLocaleLowerCase()}s?sid=${props.server.serverId}`"
             >
               <PlusIcon />
-              Add {{ type }}
+              Add {{ type.toLocaleLowerCase() }}
             </nuxt-link>
           </ButtonStyled>
         </div>
@@ -238,12 +238,14 @@
         class="mt-4 flex h-full flex-col items-center justify-center gap-4 text-center"
       >
         <PackageClosedIcon class="size-24" />
-        <p class="m-0 font-bold text-contrast">No {{ type }}s found!</p>
-        <p class="m-0">Add some {{ type }}s to your server to manage them here.</p>
+        <p class="m-0 font-bold text-contrast">No {{ type.toLocaleLowerCase() }}s found!</p>
+        <p class="m-0">
+          Add some {{ type.toLocaleLowerCase() }}s to your server to manage them here.
+        </p>
         <ButtonStyled color="brand">
-          <NuxtLink :to="`/${type}s?sid=${props.server.serverId}`">
+          <NuxtLink :to="`/${type.toLocaleLowerCase()}s?sid=${props.server.serverId}`">
             <PlusIcon />
-            Add {{ type }}
+            Add {{ type.toLocaleLowerCase() }}
           </NuxtLink>
         </ButtonStyled>
       </div>
@@ -263,7 +265,7 @@
           </ButtonStyled>
           <div>or</div>
           <ButtonStyled class="mt-8">
-            <NuxtLink :to="`/${type}s?sid=${props.server.serverId}`">
+            <NuxtLink :to="`/servers/manage/${props.server.serverId}/options/loader`">
               <WrenchIcon />
               Change platform
             </NuxtLink>
@@ -299,7 +301,7 @@ const props = defineProps<{
 
 const type = computed(() => {
   const loader = props.server.general?.loader?.toLowerCase();
-  return loader === "paper" || loader === "purpur" ? "plugin" : "mod";
+  return loader === "paper" || loader === "purpur" ? "Plugin" : "Mod";
 });
 
 interface Mod {
@@ -333,7 +335,7 @@ const filterMethodLabel = computed(() => {
     case "enabled":
       return "Only enabled";
     default:
-      return `All ${type.value}s`;
+      return `All ${type.value.toLocaleLowerCase()}s`;
   }
 });
 
@@ -460,7 +462,10 @@ async function removeMod(mod: Mod) {
   mod.changing = true;
 
   try {
-    await props.server.content?.remove(type.value, `/${type.value}s/${mod.filename}`);
+    await props.server.content?.remove(
+      type.value as "Mod" | "Plugin",
+      `/${type.value.toLowerCase()}s/${mod.filename}`,
+    );
     await props.server.refresh(["general", "content"]);
   } catch (error) {
     console.error("Error removing mod:", error);

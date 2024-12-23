@@ -1,7 +1,25 @@
 <template>
   <div class="contents">
     <div
-      v-if="serverData?.status === 'suspended'"
+      v-if="serverData?.status === 'suspended' && serverData.suspension_reason === 'upgrading'"
+      class="flex min-h-[calc(100vh-4rem)] items-center justify-center text-contrast"
+    >
+      <div class="flex max-w-lg flex-col items-center rounded-3xl bg-bg-raised p-6 shadow-xl">
+        <div class="flex flex-col items-center text-center">
+          <div class="flex flex-col items-center gap-4">
+            <div class="grid place-content-center rounded-full bg-bg-blue p-4">
+              <TransferIcon class="size-12 text-blue" />
+            </div>
+            <h1 class="m-0 mb-2 w-fit text-4xl font-bold">Server Upgrading</h1>
+          </div>
+          <p class="text-lg text-secondary">
+            Your server's hardware is currently being upgraded and will be back online shortly.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      v-else-if="serverData?.status === 'suspended'"
       class="flex min-h-[calc(100vh-4rem)] items-center justify-center text-contrast"
     >
       <div class="flex max-w-lg flex-col items-center rounded-3xl bg-bg-raised p-6 shadow-xl">
@@ -24,7 +42,7 @@
           </p>
         </div>
         <ButtonStyled size="large" color="brand" @click="() => router.push('/settings/billing')">
-          <button class="mt-6 !w-full">Go to billing</button>
+          <button class="mt-6 !w-full">Go to billing settings</button>
         </ButtonStyled>
       </div>
     </div>
@@ -86,10 +104,11 @@
         </ButtonStyled>
       </div>
     </div>
+    <!-- SERVER START -->
     <div
       v-else-if="serverData"
       data-pyro-server-manager-root
-      class="experimental-styles-within mobile-blurred-servericon relative mx-auto box-border flex min-h-screen w-full min-w-0 max-w-[1280px] flex-col gap-6 px-3 transition-all duration-300"
+      class="experimental-styles-within mobile-blurred-servericon relative mx-auto box-border flex min-h-screen w-full min-w-0 max-w-[1280px] flex-col gap-6 px-6 transition-all duration-300"
       :style="{
         '--server-bg-image': serverData.image
           ? `url(${serverData.image})`
@@ -302,6 +321,7 @@ import {
 import DOMPurify from "dompurify";
 import { ButtonStyled } from "@modrinth/ui";
 import { Intercom, shutdown } from "@intercom/messenger-js-sdk";
+import { reloadNuxtApp } from "#app";
 import type { ServerState, Stats, WSEvent, WSInstallationResultEvent } from "~/types/servers";
 import { usePyroConsole } from "~/store/console.ts";
 
@@ -593,17 +613,22 @@ const handleInstallationResult = async (data: WSInstallationResultEvent) => {
       errorMessage.value = data.reason ?? "Unknown error";
       error.value = new Error(data.reason ?? "Unknown error");
       let files = await server.fs?.listDirContents("/", 1, 100);
-      if (files.total > 1) {
-        for (let i = 1; i < files.total; i++) {
-          files = await server.fs?.listDirContents("/", i, 100);
-          if (files.items?.length === 0) break;
+      if (files) {
+        if (files.total > 1) {
+          for (let i = 1; i < files.total; i++) {
+            const nextFiles = await server.fs?.listDirContents("/", i, 100);
+            if (nextFiles?.items?.length === 0) break;
+            if (nextFiles) files = nextFiles;
+          }
         }
       }
-      const fileName = await files.items?.find((file: { name: string }) =>
+      const fileName = files?.items?.find((file: { name: string }) =>
         file.name.startsWith("modrinth-installation"),
       )?.name;
-      errorLogFile.value = fileName;
-      errorLog.value = await server.fs?.downloadFile(fileName);
+      errorLogFile.value = fileName ?? "";
+      if (fileName) {
+        errorLog.value = await server.fs?.downloadFile(fileName);
+      }
       break;
     }
   }

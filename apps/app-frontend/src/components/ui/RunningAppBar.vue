@@ -1,9 +1,5 @@
 <template>
   <div class="action-groups">
-    <a href="https://support.modrinth.com" class="link">
-      <ChatIcon />
-      <span> Get support </span>
-    </a>
     <Button
       v-if="currentLoadingBars.length > 0"
       ref="infoButton"
@@ -14,7 +10,7 @@
       <DownloadIcon />
     </Button>
     <div v-if="offline" class="status">
-      <span class="circle stopped" />
+      <UnplugIcon />
       <div class="running-text">
         <span> Offline </span>
       </div>
@@ -108,7 +104,13 @@
 </template>
 
 <script setup>
-import { DownloadIcon, StopCircleIcon, TerminalSquareIcon, DropdownIcon } from '@modrinth/assets'
+import {
+  DownloadIcon,
+  StopCircleIcon,
+  TerminalSquareIcon,
+  DropdownIcon,
+  UnplugIcon,
+} from '@modrinth/assets'
 import { Button, Card } from '@modrinth/ui'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { get_all as getRunningProcesses, kill as killProcess } from '@/helpers/process'
@@ -117,7 +119,6 @@ import { useRouter } from 'vue-router'
 import { progress_bars_list } from '@/helpers/state.js'
 import ProgressBar from '@/components/ui/ProgressBar.vue'
 import { handleError } from '@/store/notifications.js'
-import { ChatIcon } from '@/assets/icons'
 import { get_many } from '@/helpers/profile.js'
 import { trackEvent } from '@/helpers/analytics'
 
