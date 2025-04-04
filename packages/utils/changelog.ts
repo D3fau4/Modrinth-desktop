@@ -11,6 +11,96 @@ export type VersionEntry = {
 
 const VERSIONS: VersionEntry[] = [
   {
+    date: `2025-04-01T21:15:00-07:00`,
+    product: 'web',
+    body: `### Added
+- Reverted Modrinth Pizza due to issues in pizza processing leading to users being redirected to [this page](https://modrinth.com/pizza/error).
+- Fixed bug causing theme color to turn orange and corners turn sharp.`,
+  },
+  {
+    date: `2025-04-01T12:00:00`,
+    product: 'web',
+    body: `### Added
+- Added Modrinth Pizza.`,
+  },
+  {
+    date: `2025-04-01T00:00:00`,
+    product: 'web',
+    body: `### Improvements
+- Fixed project version field accepting more than 32 characters.`,
+  },
+  {
+    date: `2025-03-25T18:25:00-07:00`,
+    product: 'web',
+    body: `### Improvements
+- Fixed random 'displayName' error on search pages on some browsers such as Firefox.
+- Fixed 'Resubmit' icon in publishing checklist showing up when it hasn't been submitted before.`,
+  },
+  {
+    date: `2025-03-25T10:40:00-07:00`,
+    product: 'web',
+    body: `### Improvements
+- Fixed error with links on error pages.`,
+  },
+  {
+    date: `2025-03-24T22:30:00-07:00`,
+    product: 'servers',
+    body: `### Improvements
+- Fixed server plugin loaders not being populated when browsing for plugins
+- Fixed modpack search being filtered by Minecraft version when browsing for modpacks.`,
+  },
+  {
+    date: `2025-03-24T22:30:00-07:00`,
+    product: 'web',
+    body: `### Improvements
+- Improved error handling, especially when the Modrinth API is down.`,
+  },
+  {
+    date: `2025-03-13T19:30:00-07:00`,
+    product: 'web',
+    body: `### Improvements
+- Updated Modrinth Servers marketing page, removing Pyro branding.`,
+  },
+  {
+    date: `2025-03-12T10:15:00-07:00`,
+    product: 'web',
+    body: `### Improvements
+- Fixed low-res icons being pixelated.
+- Fixed mobile navbar hiding bottom of footer.
+- Updated CMP info page to correct some incorrect information.
+- Updated CCPA notice with updated information since Modrinth Servers and Modrinth+.
+- Fixed review page failing under edge case.`,
+  },
+  {
+    date: `2025-03-05T17:40:00-08:00`,
+    product: 'web',
+    body: `### Improvements
+- Fixed moderation-end pages failing under edge cases.`,
+  },
+  {
+    date: `2025-03-05T12:40:00-08:00`,
+    product: 'web',
+    body: `### Improvements
+- Fixed various errors with modals for some users.
+- Fixed hold R button not working on some systems.`,
+  },
+  {
+    date: `2025-03-03T22:30:00-08:00`,
+    product: 'web',
+    body: `### Added
+- Hold R for a random project :D
+
+### Improvements
+- Improved admin navigation and admin panels.`,
+  },
+  {
+    date: `2025-03-02T18:45:00-08:00`,
+    product: 'web',
+    body: `### Improvements
+- Added option to copy version IDs from the version list for project members and developer mode.
+- Fixed the staff moderation checklist going off the screen.`,
+  },
+  {
     date: `2025-02-25T10:20:00-08:00`,
     product: 'servers',
     body: `### Improvements
