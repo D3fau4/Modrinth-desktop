@@ -15,12 +15,6 @@ on:
       - 'packages/ui/**'
       - 'packages/utils/**'
   workflow_dispatch:
-    inputs:
-      sign-windows-binaries:
-        description: Sign Windows binaries
-        type: boolean
-        default: true
-        required: false
 
 jobs:
   build:
@@ -28,10 +22,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, windows-latest, ubuntu-latest]
+        platform: [windows-latest, ubuntu-latest]
         include:
-          - platform: macos-latest
-            artifact-target-name: universal-apple-darwin
           - platform: windows-latest
             artifact-target-name: x86_64-pc-windows-msvc
           - platform: ubuntu-latest
@@ -49,7 +41,6 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           rustflags: ''
-          target: ${{ startsWith(matrix.platform, 'macos') && 'x86_64-apple-darwin' || '' }}
 
       - name: 🧰 Install pnpm
         uses: pnpm/action-setup@v4
@@ -87,56 +78,12 @@ jobs:
           cp packages/app-lib/.env.prod packages/app-lib/.env
 
       - name: 💨 Setup Turbo cache
-        uses: rharkor/caching-for-turbo@v1.8
-
-      - name: 🧰 Install dependencies
-        run: pnpm install
-
-      - name: ✍️ Set up Windows code signing
-        if: startsWith(matrix.platform, 'windows')
-        shell: bash
-        run: |
-          if [ '${{ startsWith(github.ref, 'refs/tags/v') || inputs.sign-windows-binaries }}' = 'true' ]; then
-            choco install jsign --ignore-dependencies # GitHub runners come with a global Java installation already
-          else
-            dasel delete -f apps/app/tauri-release.conf.json 'bundle.windows.signCommand'
-          fi
-
-      - name: 🔨 Build macOS app
-        run: pnpm --filter=@modrinth/app run tauri build --target universal-apple-darwin --config tauri-release.conf.json
-        if: startsWith(matrix.platform, 'macos')
-        env:
-          ENABLE_CODE_SIGNING: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-
-      - name: 🔨 Build Linux app
         run: pnpm --filter=@modrinth/app run tauri build --config tauri-release.conf.json
         if: startsWith(matrix.platform, 'ubuntu')
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
 
       - name: 🔨 Build Windows app
-        run: |
-          [System.Convert]::FromBase64String("$env:DIGICERT_ONE_SIGNER_CLIENT_CERTIFICATE_BASE64") | Set-Content -Path signer-client-cert.p12 -AsByteStream
-          $env:DIGICERT_ONE_SIGNER_CREDENTIALS = "$env:DIGICERT_ONE_SIGNER_API_KEY|$PWD\signer-client-cert.p12|$env:DIGICERT_ONE_SIGNER_CLIENT_CERTIFICATE_PASSWORD"
-          $env:JAVA_HOME = "$env:JAVA_HOME_17_X64"
-          pnpm --filter=@modrinth/app run tauri build --config tauri-release.conf.json --verbose --bundles 'nsis,updater'
-          Remove-Item -Path signer-client-cert.p12 -ErrorAction SilentlyContinue
+        run: pnpm --filter=@modrinth/app run tauri build --config tauri-release.conf.json --verbose --bundles 'nsis,updater'
         if: startsWith(matrix.platform, 'windows')
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          DIGICERT_ONE_SIGNER_API_KEY: ${{ secrets.DIGICERT_ONE_SIGNER_API_KEY }}
-          DIGICERT_ONE_SIGNER_CLIENT_CERTIFICATE_BASE64: ${{ secrets.DIGICERT_ONE_SIGNER_CLIENT_CERTIFICATE_BASE64 }}
-          DIGICERT_ONE_SIGNER_CLIENT_CERTIFICATE_PASSWORD: ${{ secrets.DIGICERT_ONE_SIGNER_CLIENT_CERTIFICATE_PASSWORD }}
 
       - name: 📤 Upload app bundles
         uses: actions/upload-artifact@v4
@@ -146,7 +93,5 @@ jobs:
             target/release/bundle/appimage/Modrinth App_*.AppImage*
             target/release/bundle/deb/Modrinth App_*.deb*
             target/release/bundle/rpm/Modrinth App-*.rpm*
-            target/universal-apple-darwin/release/bundle/macos/Modrinth App.app.tar.gz*
-            target/universal-apple-darwin/release/bundle/dmg/Modrinth App_*.dmg*
             target/release/bundle/nsis/Modrinth App_*-setup.exe*
             target/release/bundle/nsis/Modrinth App_*-setup.nsis.zip*
