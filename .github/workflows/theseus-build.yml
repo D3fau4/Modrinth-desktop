@@ -41,6 +41,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           rustflags: ''
+          target: ${{ startsWith(matrix.platform, 'macos') && 'x86_64-apple-darwin' || '' }}
 
       - name: 🧰 Install pnpm
         uses: pnpm/action-setup@v4
@@ -78,12 +79,25 @@ jobs:
           cp packages/app-lib/.env.prod packages/app-lib/.env
 
       - name: 💨 Setup Turbo cache
+        uses: rharkor/caching-for-turbo@v1.8
+
+      - name: 🧰 Install dependencies
+        run: pnpm install
+
+      - name: 🔨 Build Linux app
         run: pnpm --filter=@modrinth/app run tauri build --config tauri-release.conf.json
         if: startsWith(matrix.platform, 'ubuntu')
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
 
       - name: 🔨 Build Windows app
-        run: pnpm --filter=@modrinth/app run tauri build --config tauri-release.conf.json --verbose --bundles 'nsis,updater'
+        run: |
+          pnpm --filter=@modrinth/app run tauri build --config tauri-release.conf.json --verbose --bundles 'nsis,updater'
         if: startsWith(matrix.platform, 'windows')
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
 
       - name: 📤 Upload app bundles
         uses: actions/upload-artifact@v4
@@ -93,5 +107,7 @@ jobs:
             target/release/bundle/appimage/Modrinth App_*.AppImage*
             target/release/bundle/deb/Modrinth App_*.deb*
             target/release/bundle/rpm/Modrinth App-*.rpm*
+            target/universal-apple-darwin/release/bundle/macos/Modrinth App.app.tar.gz*
+            target/universal-apple-darwin/release/bundle/dmg/Modrinth App_*.dmg*
             target/release/bundle/nsis/Modrinth App_*-setup.exe*
             target/release/bundle/nsis/Modrinth App_*-setup.nsis.zip*
