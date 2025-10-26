@@ -1,0 +1,44 @@
+name: Sync Fork with Upstream
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Permite ejecutar manualmente la acción
+
+env:
+  SOURCE_REPO: 'https://github.com/modrinth/code.git'
+  TARGET_BRANCH: 'main'
+  WORKING_BRANCH: 'main'
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Configurar Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Checkout de tu repositorio
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Añadir el repo de origen
+      run: |
+        git remote add source-repo ${{ env.SOURCE_REPO }}
+        git fetch source-repo
+
+    - name: Crear o mover a la rama de trabajo
+      run: |
+        git fetch origin
+        git checkout -B ${{ env.WORKING_BRANCH }} origin/${{ env.WORKING_BRANCH }}
+
+    - name: Hacer merge de los cambios del repo de origen
+      run: |
+        git merge source-repo/${{ env.TARGET_BRANCH }} --allow-unrelated-histories || echo "No hay cambios para mergear"
+
+    - name: Subir los cambios al repositorio
+      run: |
+        git push origin ${{ env.WORKING_BRANCH }}
